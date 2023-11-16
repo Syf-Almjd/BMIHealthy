@@ -40,7 +40,7 @@ The BMI Calculator App is available for download on both iOS and Android platfor
 
 ## Feedback and Support
 
-We value your feedback! If you have any suggestions, encounter issues, or need assistance, please contact our support team at support@bmicalculatorapp.com.
+We value your feedback! If you have any suggestions, encounter issues, or need assistance, please contact our support team at syfalmjd11@gmail.com.
 
 ## Privacy
 
