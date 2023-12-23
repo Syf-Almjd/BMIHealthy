@@ -9,8 +9,7 @@ class Assets {
   static const String bMIRisk = 'assets/BMI/risk.png';
   static const String bMISkinny = 'assets/BMI/skinny.png';
   static const String fontsMontserratBold = 'assets/fonts/Montserrat-Bold.ttf';
-  static const String fontsMontserratLight =
-      'assets/fonts/Montserrat-Light.ttf';
-  static const String fontsMontserratMedium =
-      'assets/fonts/Montserrat-Medium.ttf';
+  static const String fontsMontserratLight = 'assets/fonts/Montserrat-Light.ttf';
+  static const String fontsMontserratMedium = 'assets/fonts/Montserrat-Medium.ttf';
+
 }
