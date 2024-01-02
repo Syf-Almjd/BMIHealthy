@@ -2,7 +2,7 @@ name: bmihealthy
 description: New BMI Calcautor with suggetions
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.1.2 <4.0.0'
