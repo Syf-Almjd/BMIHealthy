@@ -4,8 +4,10 @@ import 'package:bmihealthy/src/config/utils/managers/app_constants.dart';
 import 'package:bmihealthy/src/data/local/localData_cubit/local_data_cubit.dart';
 import 'package:bmihealthy/src/presentation/Modules/Theme/ThemeHeader.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../../config/utils/styles/app_colors.dart';
+import '../../../Ads/ad_helper.dart';
 import '../../../Shared/Components.dart';
 
 class BMICalculator extends StatefulWidget {
@@ -20,8 +22,40 @@ class _BMICalculatorState extends State<BMICalculator> {
   TextEditingController weight = TextEditingController();
   TextEditingController age = TextEditingController();
   late double heightData, weightData, ageData, result;
+
   bool isVisible = false;
   late String statusText, url1Name, url1, url2Name, url2, url3Name, url3;
+  BannerAd? _bannerAd;
+
+  @override
+  void initState() {
+    super.initState();
+    getAd();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bannerAd?.dispose();
+  }
+
+  getAd() {
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+        },
+      ),
+    ).load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -345,8 +379,21 @@ class _BMICalculatorState extends State<BMICalculator> {
               // ),
             ],
           ),
+          getCube(1, context),
+          if (_bannerAd != null) adWidget(),
         ]
       ],
+    );
+  }
+
+  Widget adWidget() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      ),
     );
   }
 

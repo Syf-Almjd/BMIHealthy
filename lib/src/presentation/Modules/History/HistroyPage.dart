@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../config/utils/managers/app_constants.dart';
 import '../../../config/utils/styles/app_colors.dart';
 import '../../../data/local/localData_cubit/local_data_cubit.dart';
+import '../../Ads/ad_helper.dart';
 import '../../Shared/Components.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -17,10 +19,37 @@ class _HistoryPageState extends State<HistoryPage> {
   List<String> prevBMI = [];
   bool isLoaded = false;
 
+  BannerAd? _bannerAd;
+
   @override
   void initState() {
     super.initState();
+    getAd();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
     getLocalData();
+    _bannerAd?.dispose();
+  }
+
+  getAd() {
+    BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          ad.dispose();
+        },
+      ),
+    ).load();
   }
 
   getLocalData() async {
@@ -43,6 +72,8 @@ class _HistoryPageState extends State<HistoryPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_bannerAd != null) adWidget(),
+              getCube(1, context),
               Text(
                 "History",
                 style: TextStyle(
@@ -129,6 +160,17 @@ class _HistoryPageState extends State<HistoryPage> {
     } else {
       return Container();
     }
+  }
+
+  Widget adWidget() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      ),
+    );
   }
 }
 
