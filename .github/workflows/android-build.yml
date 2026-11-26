@@ -32,6 +32,8 @@ jobs:
   runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -62,3 +64,16 @@ jobs:
           path: |
             shots/
             it.log
+      - name: Publish screenshots to ci-shots branch
+        if: always()
+        run: |
+          mkdir -p /tmp/pub && cp -r shots /tmp/pub/ 2>/dev/null || true
+          cp it.log /tmp/pub/ 2>/dev/null || true
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git checkout --orphan ci-shots
+          git rm -rf -q . || true
+          cp -r /tmp/pub/* .
+          git add shots it.log
+          git commit -q -m "runtime screenshots for ${GITHUB_SHA}"
+          git push -f origin ci-shots
