@@ -25,7 +25,7 @@ sleep 1; kill $CAP 2>/dev/null
 echo "test exit code: $RC"
 tail -40 it.log
 adb logcat -d 2>/dev/null | grep -iE "gads|Ads:|AdRequest|AdLoader" | tail -25 | cut -c1-220 | sed "s/^/ADLOG: /"
-for f in $(ls shots/app_*.png 2>/dev/null | tail -3); do echo "B64_BEGIN $f"; base64 -w0 "$f"; echo; echo "B64_END $f"; done
+for f in $(ls shots/app_*.png 2>/dev/null | while read x; do echo "$(md5sum < $x | cut -c1-8) $x"; done | sort -k1,1 -u | awk '{print $2}' | sort | tail -10); do echo "B64_BEGIN $f"; base64 -w0 "$f"; echo; echo "B64_END $f"; done
 echo "captured: $(ls shots | grep -c '^app_')"
 if [ $RC -ne 0 ]; then
   grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|AD_WIDGET|The following|overflow" it.log | head -12 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
