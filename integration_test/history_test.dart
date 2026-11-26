@@ -62,6 +62,22 @@ void main() {
     print('AD_WIDGET_PRESENT:$adSeen');
     if (adSeen) {
       await shot(tester, 'history_with_ad');
+      // Delete both entries after the banner has loaded: the banner must go
+      // with the last item, and the bottom navigation must still work.
+      for (final label in ['27.4', '22.86']) {
+        await tester.drag(find.text(label), const Offset(-600, 0));
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pumpAndSettle(const Duration(seconds: 1));
+      }
+      await shot(tester, 'history_after_delete');
+      expect(find.byType(Dismissible), findsNothing);
+      expect(find.byType(AdWidget), findsNothing,
+          reason: 'banner hidden once History is empty again');
+      await tester.tap(find.byIcon(Icons.home_outlined));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('BMI Calculator'), findsWidgets);
+      // ignore: avoid_print
+      print('NAV_AFTER_EMPTY_OK');
     }
   });
 }
