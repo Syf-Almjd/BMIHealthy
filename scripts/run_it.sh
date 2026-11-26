@@ -16,4 +16,7 @@ wait $PID
 RC=$?
 echo "test exit code: $RC"
 tail -40 it.log
+if [ $RC -ne 0 ]; then
+  grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|AD_WIDGET|The following|overflow" it.log | head -12 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
+fi
 exit $RC
