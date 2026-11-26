@@ -53,6 +53,15 @@ void main() {
     expect(find.text('27.4'), findsOneWidget);
     // Whether a test banner is filled is up to the ad network; log it.
     // ignore: avoid_print
-    print('AD_WIDGET_PRESENT:${find.byType(AdWidget).evaluate().isNotEmpty}');
+    var adSeen = false;
+    for (var i = 0; i < 40 && !adSeen; i++) {
+      await tester.pump(const Duration(seconds: 1));
+      adSeen = find.byType(AdWidget).evaluate().isNotEmpty;
+    }
+    // ignore: avoid_print
+    print('AD_WIDGET_PRESENT:$adSeen');
+    if (adSeen) {
+      await shot(tester, 'history_with_ad');
+    }
   });
 }
