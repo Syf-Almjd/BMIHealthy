@@ -1,0 +1,48 @@
+name: Signed release bundle
+# Runs only for a push to the fix branch by the repo owner whose commit message
+# contains [sign-release]. No pull_request trigger, so forks cannot reach the secrets.
+on:
+  push:
+    branches: [fix/play-target-api-36]
+permissions:
+  contents: read
+jobs:
+  release:
+    if: contains(github.event.head_commit.message, '[sign-release]') && github.actor == 'Syf-Almjd'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      # The build runs with no secrets in the environment and no key.properties,
+      # so it produces an unsigned bundle. Only the signing step below sees the key.
+      - run: flutter build appbundle --release
+      - name: Sign bundle (only step with secrets)
+        env:
+          KS_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          set +x
+          umask 077
+          printf '%s' "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$RUNNER_TEMP/upload.jks" -storepass:env KS_PASS -keypass:env KS_PASS build/app/outputs/bundle/release/app-release.aab upload
+          rm -f "$RUNNER_TEMP/upload.jks"
+      - name: Verify signature (public certificate data only)
+        run: |
+          jarsigner -verify build/app/outputs/bundle/release/app-release.aab | head -3
+          keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab | grep -E "SHA1|Owner"
+          unzip -l build/app/outputs/bundle/release/app-release.aab | grep -ciE "key.properties|\.jks" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 7
