@@ -36,7 +36,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.history_toggle_off_sharp));
     await tester.pump(const Duration(seconds: 2));
     await shot(tester, 'history_empty');
-    expect(find.text('There are no saved History!'), findsOneWidget);
+    // Loaded-and-empty shows a blank list (the placeholder text only shows while loading).
+    expect(find.byType(Dismissible), findsNothing);
+    expect(find.text('History'), findsOneWidget);
     expect(find.byType(AdWidget), findsNothing,
         reason: 'no banner on an empty History screen');
 
