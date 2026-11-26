@@ -1,0 +1,75 @@
+name: Signed release bundle
+# Runs only for a push to the fix branch by the repo owner whose commit message
+# contains [sign-release]. No pull_request trigger, so forks cannot reach the secrets.
+# Job 1 builds an unsigned bundle with third-party actions and no secrets.
+# Job 2 holds the secrets and uses only GitHub-owned actions and the runner's jarsigner.
+on:
+  push:
+    branches: [fix/play-target-api-36]
+permissions:
+  contents: read
+jobs:
+  build:
+    if: contains(github.event.head_commit.message, '[sign-release]') && github.actor == 'Syf-Almjd'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build appbundle --release
+      - name: Check 16 KB page alignment of native libraries (64-bit)
+        run: |
+          rm -rf /tmp/aabx && mkdir -p /tmp/aabx
+          unzip -q -o build/app/outputs/bundle/release/app-release.aab 'base/lib/arm64-v8a/*' 'base/lib/x86_64/*' -d /tmp/aabx || true
+          bad=0; n=0
+          for f in $(find /tmp/aabx -name '*.so'); do
+            n=$((n+1))
+            for x in $(readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | sort -u); do
+              if [ $((x)) -lt 16384 ]; then echo "NOT 16KB aligned: $f align=$x"; bad=1; fi
+            done
+          done
+          echo "native libs checked: $n, misaligned: $bad"
+          [ "$n" -gt 0 ] && [ "$bad" -eq 0 ]
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 1
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned-aab
+          path: bundle
+      - name: Sign bundle (only step with secrets)
+        env:
+          KS_B64: ${{ secrets.UPLOAD_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          set +x
+          umask 077
+          printf '%s' "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$RUNNER_TEMP/upload.jks" -storepass:env KS_PASS -keypass:env KS_PASS bundle/app-release.aab upload
+          rm -f "$RUNNER_TEMP/upload.jks"
+      - name: Verify signature (public certificate data only)
+        run: |
+          jarsigner -verify bundle/app-release.aab | head -3
+          keytool -printcert -jarfile bundle/app-release.aab | grep -E "SHA1|Owner"
+          echo "key or keystore files inside bundle: $(unzip -l bundle/app-release.aab | grep -ciE 'key.properties|\.jks' || true)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-release-aab
+          path: bundle/app-release.aab
+          retention-days: 7

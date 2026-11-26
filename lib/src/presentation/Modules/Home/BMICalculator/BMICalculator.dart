@@ -70,7 +70,9 @@ class _BMICalculatorState extends State<BMICalculator> {
             ThemeHeader(),
           ],
         ),
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.only(left: 25, right: 25, top: 40),

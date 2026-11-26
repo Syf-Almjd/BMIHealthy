@@ -11,7 +11,6 @@ ThemeData getApplicationTheme() {
     primaryColorLight: AppColors.primaryColor,
     primaryColor: AppColors.primaryColor,
     hoverColor: AppColors.lowLightPriority,
-    backgroundColor: AppColors.white,
     //Text Theme
     textTheme: ThemeData.light().textTheme.apply(
           fontFamily: AppConstants.appFontFamily,
@@ -64,7 +63,6 @@ ThemeData getDarkApplicationTheme() {
         const ColorScheme.dark().copyWith(primary: AppColors.secondaryColor),
     hoverColor: AppColors.black,
     primaryColorLight: AppColors.scaffoldColor,
-    backgroundColor: AppColors.black,
     scaffoldBackgroundColor: AppColors.black,
 
     //Text Theme
