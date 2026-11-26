@@ -23,6 +23,19 @@ jobs:
       - run: flutter build appbundle --release
       - name: Show target SDK of the release bundle manifest
         run: grep -rh "targetSdkVersion" build/app/intermediates/merged_manifests/release || true
+      - name: Check 16 KB page alignment of native libraries (64-bit)
+        run: |
+          rm -rf /tmp/aabx && mkdir -p /tmp/aabx
+          unzip -q -o build/app/outputs/bundle/release/app-release.aab 'base/lib/arm64-v8a/*' 'base/lib/x86_64/*' -d /tmp/aabx || true
+          bad=0; n=0
+          for f in $(find /tmp/aabx -name '*.so'); do
+            n=$((n+1))
+            for x in $(readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | sort -u); do
+              if [ $((x)) -lt 16384 ]; then echo "NOT 16KB aligned: $f align=$x"; bad=1; fi
+            done
+          done
+          echo "native libs checked: $n, misaligned: $bad"
+          [ "$n" -gt 0 ] && [ "$bad" -eq 0 ]
       - uses: actions/upload-artifact@v4
         with:
           name: bmihealthy-build-check
@@ -52,7 +65,7 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          target: default
+          target: google_apis
           disable-animations: true
           script: bash scripts/run_it.sh
       - uses: actions/upload-artifact@v4
