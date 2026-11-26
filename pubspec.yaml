@@ -18,7 +18,7 @@ dev_dependencies:
   google_mobile_ads: ^9.2.0
 
   # UI Libraries
-  adaptive_theme: ^3.4.1
+  adaptive_theme: 3.7.2
   toastification: 1.0.2
 
   # Flutter Core
