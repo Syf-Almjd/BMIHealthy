@@ -8,8 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -31,27 +29,9 @@ jobs:
           path: |
             build/app/outputs/flutter-apk/app-debug.apk
             build/app/outputs/bundle/release/app-release.aab
-      - name: Publish encrypted outputs (ci-out-build)
-        if: always()
-        run: |
-          mkdir -p /tmp/o
-          tar czf /tmp/o/payload.tgz build/app/outputs/bundle/release/app-release.aab 2>/dev/null || true
-          openssl rand -hex 32 > /tmp/o/k
-          openssl enc -aes-256-cbc -pbkdf2 -salt -in /tmp/o/payload.tgz -out /tmp/o/payload.enc -pass file:/tmp/o/k
-          openssl pkeyutl -encrypt -pubin -inkey ci/ci_pub.pem -in /tmp/o/k -out /tmp/o/key.enc -pkeyopt rsa_padding_mode:oaep
-          git config user.name ci
-          git config user.email ci@users.noreply.github.com
-          git checkout --orphan ci-out-build
-          git rm -rf -q . || true
-          cp /tmp/o/payload.enc /tmp/o/key.enc .
-          git add payload.enc key.enc
-          git commit -q -m "encrypted outputs for ${GITHUB_SHA}"
-          git push -f origin ci-out-build
   runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -82,19 +62,3 @@ jobs:
           path: |
             shots/
             it.log
-      - name: Publish encrypted outputs (ci-out-runtime)
-        if: always()
-        run: |
-          mkdir -p /tmp/o
-          tar czf /tmp/o/payload.tgz shots it.log 2>/dev/null || true
-          openssl rand -hex 32 > /tmp/o/k
-          openssl enc -aes-256-cbc -pbkdf2 -salt -in /tmp/o/payload.tgz -out /tmp/o/payload.enc -pass file:/tmp/o/k
-          openssl pkeyutl -encrypt -pubin -inkey ci/ci_pub.pem -in /tmp/o/k -out /tmp/o/key.enc -pkeyopt rsa_padding_mode:oaep
-          git config user.name ci
-          git config user.email ci@users.noreply.github.com
-          git checkout --orphan ci-out-runtime
-          git rm -rf -q . || true
-          cp /tmp/o/payload.enc /tmp/o/key.enc .
-          git add payload.enc key.enc
-          git commit -q -m "encrypted outputs for ${GITHUB_SHA}"
-          git push -f origin ci-out-runtime
