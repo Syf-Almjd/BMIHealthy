@@ -1,21 +1,30 @@
 #!/bin/bash
-# Runs the integration test on the emulator and takes screenshots at markers.
+# Runs the integration test on the emulator. A background loop screencaps every 3s,
+# but only while the app under test owns the window focus, and logs the focus line.
 mkdir -p shots
 flutter test integration_test/history_test.dart -d emulator-5554 > it.log 2>&1 &
 PID=$!
-for s in home history_empty history_populated; do
-  for i in $(seq 1 600); do
-    grep -q "SHOT:$s" it.log && break
-    kill -0 $PID 2>/dev/null || break
-    sleep 1
+(
+  n=0
+  while kill -0 $PID 2>/dev/null && [ $n -lt 60 ]; do
+    F=$(adb shell dumpsys window 2>/dev/null | grep -m1 mCurrentFocus | tr -d '\r')
+    if echo "$F" | grep -q "com.mjd.bmihealthy"; then
+      n=$((n+1))
+      adb exec-out screencap -p > "shots/app_$(printf %02d $n).png"
+      echo "app_$(printf %02d $n) $(date +%T) markers=$(grep -c 'SHOT:' it.log) focus=$F" >> shots/focus.log
+    else
+      echo "nofocus $(date +%T) $F" >> shots/focus.log
+    fi
+    sleep 3
   done
-  sleep 2
-  adb exec-out screencap -p > "shots/$s.png"
-done
+) &
+CAP=$!
 wait $PID
 RC=$?
+sleep 1; kill $CAP 2>/dev/null
 echo "test exit code: $RC"
 tail -40 it.log
+echo "captured: $(ls shots | grep -c '^app_')"
 if [ $RC -ne 0 ]; then
   grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|AD_WIDGET|The following|overflow" it.log | head -12 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
 fi
