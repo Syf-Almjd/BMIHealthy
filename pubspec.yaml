@@ -15,7 +15,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  google_mobile_ads: ^4.0.0
+  google_mobile_ads: ^9.2.0
 
   # UI Libraries
   adaptive_theme: ^3.4.1
