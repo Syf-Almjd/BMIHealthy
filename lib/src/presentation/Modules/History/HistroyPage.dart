@@ -70,7 +70,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    final bannerVisible = _bannerAd != null && prevBMI.isNotEmpty;
+    final content = ListView(
       physics: const BouncingScrollPhysics(),
       children: [
         Padding(
@@ -112,11 +113,21 @@ class _HistoryPageState extends State<HistoryPage> {
                   height: MediaQuery.of(context).size.height - 300.0,
                   child: listData()),
             )),
-        if (_bannerAd != null && prevBMI.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 24, bottom: 16),
+      ],
+    );
+    if (!bannerVisible) return content;
+    // The banner sits below the scrolling history, above the bottom navigation,
+    // with its real height reserved so it is never cut off.
+    return Column(
+      children: [
+        Expanded(child: content),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: adWidget(),
           ),
+        ),
       ],
     );
   }
