@@ -2,7 +2,7 @@
 # Runs the integration test on the emulator. A background loop screencaps every 3s,
 # but only while the app under test owns the window focus, and logs the focus line.
 mkdir -p shots
-flutter test integration_test/history_test.dart -d emulator-5554 > it.log 2>&1 &
+flutter test integration_test/history_test.dart -d emulator-5554 --dart-define=USE_TEST_ADS=true > it.log 2>&1 &
 PID=$!
 (
   n=0
