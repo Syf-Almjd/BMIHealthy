@@ -22,7 +22,6 @@ dev_dependencies:
   toastification: 1.0.2
 
   # Flutter Core
-  dart_secure: ^0.5.40
   shared_preferences: ^2.2.2
 
   # Other
