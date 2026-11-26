@@ -24,14 +24,13 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    getAd();
+    getLocalData();
   }
 
   @override
   void dispose() {
-    super.dispose();
-    getLocalData();
     _bannerAd?.dispose();
+    super.dispose();
   }
 
   getAd() {
@@ -41,6 +40,10 @@ class _HistoryPageState extends State<HistoryPage> {
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
           setState(() {
             _bannerAd = ad as BannerAd;
           });
@@ -55,10 +58,13 @@ class _HistoryPageState extends State<HistoryPage> {
   getLocalData() async {
     var items = await LocalDataCubit.get(context)
         .getSharedDataList(AppConstants.previousBmiList);
+    if (!mounted) return;
     setState(() {
       prevBMI = items;
       isLoaded = true;
     });
+    // Only request a banner when the screen has real content to show.
+    if (items.isNotEmpty && _bannerAd == null) getAd();
   }
 
   @override
@@ -72,7 +78,6 @@ class _HistoryPageState extends State<HistoryPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (_bannerAd != null) adWidget(),
               getCube(1, context),
               Text(
                 "History",
@@ -105,7 +110,12 @@ class _HistoryPageState extends State<HistoryPage> {
               child: SizedBox(
                   height: MediaQuery.of(context).size.height - 300.0,
                   child: listData()),
-            ))
+            )),
+        if (_bannerAd != null && prevBMI.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 24, bottom: 16),
+            child: adWidget(),
+          ),
       ],
     );
   }
