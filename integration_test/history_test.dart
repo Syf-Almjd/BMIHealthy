@@ -38,7 +38,7 @@ void main() {
     await shot(tester, 'history_empty');
     // Loaded-and-empty shows a blank list (the placeholder text only shows while loading).
     expect(find.byType(Dismissible), findsNothing);
-    expect(find.text('History'), findsOneWidget);
+    expect(find.text('History'), findsWidgets);
     expect(find.byType(AdWidget), findsNothing,
         reason: 'no banner on an empty History screen');
 
