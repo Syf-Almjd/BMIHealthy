@@ -49,6 +49,7 @@ class _HistoryPageState extends State<HistoryPage> {
           });
         },
         onAdFailedToLoad: (ad, err) {
+          debugPrint('AD_LOAD_FAILED code=${err.code} msg=${err.message}');
           ad.dispose();
         },
       ),
