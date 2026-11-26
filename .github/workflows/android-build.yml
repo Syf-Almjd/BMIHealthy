@@ -1,0 +1,31 @@
+name: Android build check
+# Runs only when started by hand or when the fix branch is pushed.
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/play-target-api-36]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter build apk --debug
+      - run: flutter build appbundle --release
+      - name: Show target SDK of the release bundle manifest
+        run: grep -rh "targetSdkVersion" build/app/intermediates/merged_manifests/release || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bmihealthy-build-check
+          path: |
+            build/app/outputs/flutter-apk/app-debug.apk
+            build/app/outputs/bundle/release/app-release.aab
