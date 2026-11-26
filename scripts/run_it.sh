@@ -24,6 +24,7 @@ RC=$?
 sleep 1; kill $CAP 2>/dev/null
 echo "test exit code: $RC"
 tail -40 it.log
+adb logcat -d 2>/dev/null | grep -iE "gads|Ads:|AdRequest|AdLoader" | tail -25 | cut -c1-220 | sed "s/^/ADLOG: /"
 echo "captured: $(ls shots | grep -c '^app_')"
 if [ $RC -ne 0 ]; then
   grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|AD_WIDGET|The following|overflow" it.log | head -12 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
