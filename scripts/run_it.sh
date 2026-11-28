@@ -7,7 +7,7 @@ flutter test $FILE -d emulator-5554 --dart-define=USE_TEST_ADS=true > it_$(basen
 PID=$!
 (
   n=0
-  while kill -0 $PID 2>/dev/null && [ $n -lt 60 ]; do
+  while kill -0 $PID 2>/dev/null && [ $n -lt 160 ]; do
     F=$(adb shell dumpsys window 2>/dev/null | grep -m1 mCurrentFocus | tr -d '\r')
     if echo "$F" | grep -q "com.mjd.bmihealthy"; then
       n=$((n+1))
@@ -26,7 +26,7 @@ sleep 1; kill $CAP 2>/dev/null
 echo "test exit code: $RC"
 tail -40 it_$(basename $SH).log
 adb logcat -d 2>/dev/null | grep -iE "gads|Ads:|AdRequest|AdLoader" | tail -25 | cut -c1-220 | sed "s/^/ADLOG: /"
-for f in $(ls $SH/app_*.png 2>/dev/null | while read x; do echo "$(md5sum < $x | cut -c1-8) $x"; done | sort -k1,1 -u | awk '{print $2}' | sort | tail -10); do echo "B64_BEGIN $f"; base64 -w0 "$f"; echo; echo "B64_END $f"; done
+for f in $(ls $SH/app_*.png 2>/dev/null | while read x; do echo "$(md5sum < $x | cut -c1-8) $x"; done | sort -k1,1 -u | awk '{print $2}' | sort | tail -30); do echo "B64_BEGIN $f"; base64 -w0 "$f"; echo; echo "B64_END $f"; done
 echo "captured: $(ls $SH | grep -c "^app_")"
 if [ $RC -ne 0 ]; then
   grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|STEP:|AD_WIDGET|The following|overflow" it_$(basename $SH).log | head -30 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
