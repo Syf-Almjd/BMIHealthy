@@ -1,0 +1,27 @@
+name: probe-aab-minsdk
+on:
+  push:
+    branches: [probe/aab-minsdk]
+permissions:
+  actions: read
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: signed-release-aab
+          run-id: 46137765350
+          github-token: ${{ github.token }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Read manifest values only
+        run: |
+          curl -sL -o bt.jar https://github.com/google/bundletool/releases/download/1.18.1/bundletool-all-1.18.1.jar
+          f=$(find . -name '*.aab' | head -1)
+          java -jar bt.jar dump manifest --bundle "$f" > m.txt
+          grep -oE 'minSdkVersion="[0-9]+"|targetSdkVersion="[0-9]+"|versionCode="[0-9]+"' m.txt | tr '\n' ' ' > o.txt
+          echo "::notice title=aabmanifest::$(cat o.txt)"
