@@ -20,7 +20,7 @@ Future<void> show(WidgetTester t, Finder f) async {
     await t.pump(const Duration(milliseconds: 300));
   }
   // ignore: avoid_print
-  print('SHOT:show_${f.evaluate().isEmpty ? 'MISSING' : 'ok'}_$f');
+  if (f.evaluate().isEmpty) print('STEP:MISSING_$f');
 }
 
 Future<void> calc(WidgetTester tester, String h, String w, String a) async {
@@ -122,6 +122,14 @@ void main() {
     await shot(tester, 'under18_note');
     await calc(tester, '170', '72', '19'); // 18-19: adult category plus WHO overlap note
     await show(tester, find.byKey(const Key('bmi_teen')));
+    // ignore: avoid_print
+    print('STEP:age19 texts=' +
+        find
+            .byType(Text)
+            .evaluate()
+            .map((e) => ((e.widget as Text).data ?? '').split(' ').take(4).join(' '))
+            .where((t) => t.isNotEmpty)
+            .join(' | '));
     expect(find.byKey(const Key('bmi_teen')), findsOneWidget);
     expect(find.text('Normal range'), findsOneWidget);
     await shot(tester, 'age19_note');
