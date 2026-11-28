@@ -22,7 +22,7 @@ jobs:
       - run: flutter build apk --debug
       - run: flutter build appbundle --release
       - name: Show target SDK of the release bundle manifest
-        run: grep -rh "targetSdkVersion" build/app/intermediates/merged_manifests/release || true
+        run: grep -rh "targetSdkVersion" build/app/intermediates/merged_manifests/release || true ; echo "::notice title=minsdk::$(grep -rhoE "minSdkVersion.[0-9]+" build/app/intermediates/merged_manifests/release | head -1) $(flutter --version | head -1)"
       - name: Check 16 KB page alignment of native libraries (64-bit)
         run: |
           rm -rf /tmp/aabx && mkdir -p /tmp/aabx
