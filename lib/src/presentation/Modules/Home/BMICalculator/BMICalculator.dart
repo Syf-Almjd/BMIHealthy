@@ -30,6 +30,7 @@ class _BMICalculatorState extends State<BMICalculator> {
   TextEditingController weight = TextEditingController();
   TextEditingController age = TextEditingController();
   late double heightData, weightData, ageData, result;
+  double rawBmi = 0;
 
   bool isVisible = false;
   BannerAd? _bannerAd;
@@ -245,7 +246,8 @@ class _BMICalculatorState extends State<BMICalculator> {
     heightData = imperial ? h * cmPerInch : h;
     weightData = imperial ? w * kgPerPound : w;
     ageData = a;
-    final bmiNow = BMI(heightData, weightData);
+    rawBmi = bmiRaw(heightData, weightData);
+    final bmiNow = bmiDisplay(rawBmi);
     showToast(bmiNow.toString(), context);
     setState(() {
       result = bmiNow;
@@ -269,8 +271,8 @@ class _BMICalculatorState extends State<BMICalculator> {
 
   Widget BMIDetails(bool isVisibleBMIDetials) {
     if (!isVisibleBMIDetials) return const SizedBox.shrink();
-    final adult = ageData >= 18;
-    final cat = bmiCategory(result);
+    final adult = showAdultCategory(ageData);
+    final cat = bmiCategory(rawBmi);
     return Column(
       children: [
         Text(
@@ -295,6 +297,15 @@ class _BMICalculatorState extends State<BMICalculator> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
+          if (showTeenOverlapNote(ageData)) ...[
+            const SizedBox(height: 12),
+            const Text(
+              bmiTeen1819Text,
+              key: Key('bmi_teen'),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+          ],
         ] else
           const Text(
             bmiUnder18Text,
