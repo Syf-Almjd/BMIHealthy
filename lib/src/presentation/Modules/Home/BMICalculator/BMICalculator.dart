@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../../config/utils/styles/app_colors.dart';
+import '../../../../domain/bmi_category.dart';
 import '../../../../domain/bmi_entry.dart';
 import '../../../Ads/ad_helper.dart';
 import '../../../Shared/Components.dart';
@@ -31,7 +32,6 @@ class _BMICalculatorState extends State<BMICalculator> {
   late double heightData, weightData, ageData, result;
 
   bool isVisible = false;
-  late String statusText, url1Name, url1, url2Name, url2, url3Name, url3;
   BannerAd? _bannerAd;
 
   @override
@@ -249,7 +249,6 @@ class _BMICalculatorState extends State<BMICalculator> {
     showToast(bmiNow.toString(), context);
     setState(() {
       result = bmiNow;
-      ResultIndex(result);
       isVisible = true;
     });
     LocalDataCubit.get(context)
@@ -268,184 +267,62 @@ class _BMICalculatorState extends State<BMICalculator> {
     });
   }
 
-  String ResultIndex(double result) {
-    if (result <= 18.5) {
-      setState(() {
-        url1 =
-            "https://www.muscleandfitness.com/nutrition/gain-mass/10-best-foods-help-skinny-guys-gain-muscle/";
-        url1Name = "What foods should you eat?";
-        url2 =
-            "https://www.trifectanutrition.com/blog/how-to-gain-weight-fast-secrets-for-skinny-guys";
-        url2Name = "Get more advices here";
-        url3 =
-            "https://www.nerdfitness.com/blog/a-skinny-guys-guide-to-building-muscle-and-bulking-up/";
-        url3Name = "Bulking Options";
-        statusText =
-            "You need to gain some weight a perfect BMI for you should be between 18.5 to 24.9.  \n Re-balance meals to contain more meat (or soy for vegans/vegetarians), Eat more healthy calories, and Optimise your strength training.";
-      });
-      return 'assets/BMI/skinny.png';
-    } else if (result >= 18.5 && result <= 22.9) {
-      setState(() {
-        url1 = "https://www.wikihow.com/Be-Healthy";
-        url1Name = "Staying healthy";
-        url2 =
-            "https://www.nerdfitness.com/blog/how-to-build-your-own-workout-routine/";
-        url2Name = "Workout Routine: Plans, Schedules, and Exercises";
-        url3 =
-            "https://health.ucdavis.edu/blog/good-food/top-15-healthy-foods-you-should-be-eating/2019/04";
-        url3Name = "Healthy food to keep eating";
-
-        statusText =
-            "You body is Good! Keep eating a variety of nutrient rich foods. Your body actually needs more than 40 different nutrients for good health, and there is not one single source for them.";
-      });
-
-      return 'assets/BMI/normal.png';
-    } else if (result >= 22.9 && result <= 24.9) {
-      setState(() {
-        url1 =
-            "https://www.hsph.harvard.edu/obesity-prevention-source/obesity-consequences/health-effects/";
-        url1Name = "Health Risks";
-        url2 =
-            "https://www.bighealthandfitness.co.uk/easy-workouts-for-overweight-beginners/";
-        url2Name = "Effective and Easy Workouts";
-        url3 =
-            "https://my.clevelandclinic.org/health/diseases/11209-weight-control-and-obesity";
-        url3Name = "Obesity Causes and Prevention";
-
-        statusText =
-            "You need to lose some weight a perfect BMI for you should be between 18.5 to 24.9. \n Start choosing healthier foods (whole grains, fruits and vegetables, healthy fats and protein sources) and beverages.";
-      });
-
-      return 'assets/BMI/risk.png';
-    } else if (result >= 24.9 && result <= 29.9) {
-      setState(() {
-        url1 =
-            "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight";
-        url1Name = "Obesity and overweight";
-        url2 =
-            "https://www.healthline.com/health/fitness-exercise/exercise-for-obese-people#How-Much-Exercise-Do-You-Need?";
-        url2Name = "Exercises You Need";
-        url3 =
-            "https://www.hsph.harvard.edu/obesity-prevention-source/diet-lifestyle-to-prevent-obesity/";
-        url3Name = "Healthy Weight Checklist";
-
-        statusText =
-            "You need to lose weight; a perfect BMI for you should be between 18.5 to 24.9.  \n Achieving and maintaining a healthy weight includes healthy eating, physical activity, optimal sleep, and stress reduction.";
-      });
-
-      return 'assets/BMI/overweight.png';
-    }
-    url1 =
-        "https://www.heart.org/en/healthy-living/healthy-eating/losing-weight/extreme-obesity-and-what-you-can-do";
-    url1Name = "What You Can Do";
-    url2 = "https://www.healthline.com/health/weight-loss/obesity";
-    url2Name = "Causes of Obesity";
-    url3 =
-        "https://www.webmd.com/diet/obesity/ss/slideshow-obesity-weight-loss-tips";
-    url3Name = "Tips to Lose that Weight";
-
-    statusText =
-        "You need to lose a lot of weight; a perfect BMI for you should be between 18.5 to 24.9.  \n The most important strategies for preventing obesity are healthy eating behaviors, regular physical activity, and reduced sedentary activity (such as watching television and videotapes, and playing computer games).";
-    return 'assets/BMI/fat.png';
-  }
-
   Widget BMIDetails(bool isVisibleBMIDetials) {
+    if (!isVisibleBMIDetials) return const SizedBox.shrink();
+    final adult = ageData >= 18;
+    final cat = bmiCategory(result);
     return Column(
       children: [
-        if (isVisibleBMIDetials == true) ...[
+        Text(
+          textAlign: TextAlign.center,
+          "Details: $result BMI",
+          style: const TextStyle(fontSize: 18, color: Color(0xff3a3b3a)),
+        ),
+        const SizedBox(height: 16),
+        if (adult) ...[
           Text(
+            bmiCategoryLabel(cat),
+            key: const Key('bmi_category'),
             textAlign: TextAlign.center,
-            "Details: $result BMI",
-            style: const TextStyle(fontSize: 18, color: Color(0xff3a3b3a)),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(
-            height: 25.0,
-            width: 25.0,
-          ),
-          const SizedBox(
-            height: 25.0,
-            width: 25.0,
-          ),
-          Text(
+          const SizedBox(height: 12),
+          Image.asset(bmiCategoryImage(cat), scale: 2),
+          const SizedBox(height: 12),
+          const Text(
+            bmiScaleText,
+            key: Key('bmi_scale'),
             textAlign: TextAlign.center,
-            statusText,
-            style: const TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
-          const SizedBox(
-            height: 25.0,
-            width: 25.0,
+        ] else
+          const Text(
+            bmiUnder18Text,
+            key: Key('bmi_under18'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    Image.asset(ResultIndex(result), scale: 2),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
-                      ),
-                      onPressed: () {
-                        showToast("Click the back Button to go back", context);
-                        openUrl(url1);
-                      },
-                      child: Text(
-                        textAlign: TextAlign.center,
-                        url1Name,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                    ),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
-                      ),
-                      onPressed: () {
-                        showToast("Click the back Button to go back", context);
-                        openUrl(url2);
-                      },
-                      child: Text(
-                        textAlign: TextAlign.center,
-                        url2Name,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                      height: 10,
-                    ),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0)),
-                      ),
-                      onPressed: () {
-                        showToast("Click the back Button to go back", context);
-                        openUrl(url3);
-                      },
-                      child: Text(
-                        textAlign: TextAlign.center,
-                        url3Name,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // ),
-            ],
+        const SizedBox(height: 12),
+        const Text(
+          bmiLimitsText,
+          key: Key('bmi_limits'),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: Colors.grey),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
           ),
-          getCube(1, context),
-          if (_bannerAd != null) adWidget(),
-        ]
+          onPressed: () {
+            showToast("Click the back Button to go back", context);
+            openUrl(whoBmiUrl);
+          },
+          child: const Text('WHO: Obesity and overweight'),
+        ),
+        getCube(1, context),
+        if (_bannerAd != null) adWidget(),
       ],
     );
   }
