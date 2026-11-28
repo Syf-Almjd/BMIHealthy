@@ -21,6 +21,9 @@ class _NavigationControllerState extends State<NavigationController> {
 
   @override
   Widget build(BuildContext context) {
+    final txt = Theme.of(context).textTheme.bodyMedium?.color ??
+        Theme.of(context).colorScheme.onSurface;
+    final dark = txt.computeLuminance() > 0.5;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
@@ -28,8 +31,8 @@ class _NavigationControllerState extends State<NavigationController> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         elevation: 0.0,
-        unselectedItemColor: AppColors.greyDark,
-        selectedItemColor: AppColors.primaryColor,
+        unselectedItemColor: txt.withOpacity(0.8),
+        selectedItemColor: dark ? const Color(0xFF8AB4FF) : AppColors.primaryColor,
         enableFeedback: true,
         backgroundColor: Colors.transparent,
         iconSize: 22,
