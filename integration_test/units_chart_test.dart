@@ -102,6 +102,24 @@ void main() {
     expect(find.text('25.0'), findsOneWidget);
     expect(find.textContaining(RegExp(r'\d{2}/\d{2}/\d{4}')), findsNWidgets(2));
     await shot(tester, 'history_chart');
+    // Category fix: 24.91 used to be told to "lose weight"; now normal range.
+    await tester.tap(find.byIcon(Icons.home_outlined));
+    await tester.pump(const Duration(seconds: 1));
+    await calc(tester, '170', '72', '30');
+    await show(tester, find.text('Normal range'));
+    expect(find.text('Normal range'), findsOneWidget);
+    expect(find.textContaining('Details: 24.91'), findsOneWidget);
+    expect(find.textContaining('lose'), findsNothing);
+    expect(find.byKey(const Key('bmi_limits')), findsOneWidget);
+    await shot(tester, 'category_24_91_normal');
+    await calc(tester, '170', '80', '30'); // 27.68
+    await show(tester, find.text('Overweight'));
+    expect(find.text('Overweight'), findsOneWidget);
+    await calc(tester, '170', '72', '15'); // under 18: no adult category
+    await show(tester, find.byKey(const Key('bmi_under18')));
+    expect(find.byKey(const Key('bmi_under18')), findsOneWidget);
+    expect(find.byKey(const Key('bmi_category')), findsNothing);
+    await shot(tester, 'under18_note');
     // ignore: avoid_print
     print('UNITS_CHART_OK');
   });
