@@ -6,7 +6,9 @@ import '../../../config/utils/managers/app_constants.dart';
 import '../../../config/utils/styles/app_colors.dart';
 import '../../../data/local/localData_cubit/local_data_cubit.dart';
 import '../../Ads/ad_helper.dart';
+import '../../../domain/bmi_entry.dart';
 import '../../Shared/Components.dart';
+import 'BmiChart.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -71,6 +73,13 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final bannerVisible = _bannerAd != null && prevBMI.isNotEmpty;
+    final chartValues = prevBMI
+        .map((e) => BmiEntry.parse(e).value)
+        .whereType<double>()
+        .toList();
+    if (chartValues.length > 30) {
+      chartValues.removeRange(0, chartValues.length - 30);
+    }
     final content = ListView(
       physics: const BouncingScrollPhysics(),
       children: [
@@ -100,6 +109,11 @@ class _HistoryPageState extends State<HistoryPage> {
             ],
           ),
         ),
+        if (chartValues.length >= 2)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 35),
+            child: BmiChart(values: chartValues),
+          ),
         Padding(
             padding: const EdgeInsets.all(10),
             child: Visibility(
@@ -175,7 +189,7 @@ class _HistoryPageState extends State<HistoryPage> {
           direction: DismissDirection.endToStart,
           key: Key(prevBMI[index]),
           child: BMIInfoTile(
-            label: prevBMI[index],
+            entry: BmiEntry.parse(prevBMI[index]),
           ),
         ),
       );
@@ -199,10 +213,10 @@ class _HistoryPageState extends State<HistoryPage> {
 class BMIInfoTile extends StatelessWidget {
   const BMIInfoTile({
     Key? key,
-    required this.label,
+    required this.entry,
   }) : super(key: key);
 
-  final String label;
+  final BmiEntry entry;
 
   @override
   Widget build(BuildContext context) {
@@ -213,13 +227,14 @@ class BMIInfoTile extends StatelessWidget {
       ),
       child: ListTile(
         onTap: () async {
-          showToast("BMI was Copied! $label", context);
-          await Clipboard.setData(ClipboardData(text: label));
+          showToast("BMI was Copied! ${entry.valueText}", context);
+          await Clipboard.setData(ClipboardData(text: entry.valueText));
         },
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        subtitle: entry.dateLabel == null ? null : Text(entry.dateLabel!),
         title: Text(
-          label,
+          entry.valueText,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
