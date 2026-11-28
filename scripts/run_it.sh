@@ -29,6 +29,6 @@ adb logcat -d 2>/dev/null | grep -iE "gads|Ads:|AdRequest|AdLoader" | tail -25 |
 for f in $(ls $SH/app_*.png 2>/dev/null | while read x; do echo "$(md5sum < $x | cut -c1-8) $x"; done | sort -k1,1 -u | awk '{print $2}' | sort | tail -10); do echo "B64_BEGIN $f"; base64 -w0 "$f"; echo; echo "B64_END $f"; done
 echo "captured: $(ls $SH | grep -c "^app_")"
 if [ $RC -ne 0 ]; then
-  grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|AD_WIDGET|The following|overflow" it_$(basename $SH).log | head -12 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
+  grep -E "Expected|Actual|EXCEPTION|Exception|Bad state|Failed|failed|find|Which:|SHOT:|STEP:|AD_WIDGET|The following|overflow" it_$(basename $SH).log | head -30 | cut -c1-220 | while IFS= read -r l; do echo "::error::$l"; done
 fi
 exit $RC
