@@ -3,7 +3,7 @@ name: Android build check
 on:
   workflow_dispatch:
   push:
-    branches: [fix/play-target-api-36]
+    branches: [fix/play-target-api-36, feature/bmi-units-chart]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -67,11 +67,12 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          script: bash scripts/run_it.sh
+          script: bash -c 'bash scripts/run_it.sh integration_test/history_test.dart shots; A=$?; bash scripts/run_it.sh integration_test/units_chart_test.dart shots2; B=$?; exit $((A+B))'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: runtime-screenshots
           path: |
             shots/
-            it.log
+            shots2/
+            it_*.log
