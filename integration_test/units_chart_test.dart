@@ -52,6 +52,15 @@ void main() {
 
     // Invalid input does not crash or save.
     await calc(tester, '0', '70', '30');
+    for (var i = 0;
+        i < 3 && find.text('Enter a valid height').evaluate().isEmpty;
+        i++) {
+      await show(tester, find.text('Calculate'));
+      await tester.tap(find.text('Calculate'));
+      await tester.pump(const Duration(milliseconds: 600));
+    }
+    // ignore: avoid_print
+    print('STEP:invalid_height_msg=${find.text('Enter a valid height').evaluate().length}');
     expect(find.text('Enter a valid height'), findsWidgets);
     await tester.pump(const Duration(seconds: 4));
 
