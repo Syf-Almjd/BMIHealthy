@@ -107,6 +107,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await calc(tester, '170', '72', '30');
     await show(tester, find.text('Normal range'));
+    await tester.ensureVisible(find.textContaining('Details: 24.91'));
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Normal range'), findsOneWidget);
     expect(find.textContaining('Details: 24.91'), findsOneWidget);
     expect(find.textContaining('lose'), findsNothing);
