@@ -20,6 +20,35 @@ void main() {
     });
   });
 
+  test('display never rounds up onto a threshold the raw value has not reached', () {
+    final cases = <double, BmiCategory>{
+      18.496: BmiCategory.underweight,
+      24.996: BmiCategory.normal,
+      24.994: BmiCategory.normal,
+      29.996: BmiCategory.overweight,
+      25.0: BmiCategory.overweight,
+      30.0: BmiCategory.obesity,
+    };
+    cases.forEach((raw, want) {
+      expect(bmiCategory(raw), want, reason: 'raw $raw');
+      final shown = bmiDisplay(raw);
+      if (want == BmiCategory.normal && raw < 25) expect(shown < 25, isTrue);
+      if (want == BmiCategory.overweight && raw < 30) expect(shown < 30, isTrue);
+      if (want == BmiCategory.underweight) expect(shown < 18.5, isTrue);
+      // the shown value classifies the same as the raw one
+      expect(bmiCategory(shown), want, reason: 'shown $shown from raw $raw');
+    });
+    expect(bmiDisplay(24.996), 24.99);
+    expect(bmiDisplay(22.0954), 22.1);
+  });
+
+  test('age policy', () {
+    expect(showAdultCategory(17.9), isFalse);
+    expect(showAdultCategory(18), isTrue);
+    expect(showTeenOverlapNote(19), isTrue);
+    expect(showTeenOverlapNote(20), isFalse);
+  });
+
   test('BMI formula and unit conversion', () {
     expect(bmiFromMetric(180, 81), 25.0);
     expect(bmiFromMetric(177.8, 154 * kgPerPound), 22.1);
