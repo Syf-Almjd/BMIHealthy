@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../../../config/utils/styles/app_colors.dart';
+import '../../../../domain/bmi_entry.dart';
 import '../../../Ads/ad_helper.dart';
 import '../../../Shared/Components.dart';
 
@@ -18,6 +19,7 @@ class BMICalculator extends StatefulWidget {
 
 class _BMICalculatorState extends State<BMICalculator> {
   int indexMaleFemale = 0;
+  bool imperial = false;
   TextEditingController height = TextEditingController();
   TextEditingController weight = TextEditingController();
   TextEditingController age = TextEditingController();
@@ -84,18 +86,31 @@ class _BMICalculatorState extends State<BMICalculator> {
               radioButton("Female", Colors.pink, 1),
             ],
           ),
-          getCube(5, context),
+          getCube(3, context),
+          SegmentedButton<bool>(
+            key: const Key('unit_toggle'),
+            segments: const [
+              ButtonSegment(value: false, label: Text('Metric (cm, kg)')),
+              ButtonSegment(value: true, label: Text('Imperial (in, lb)')),
+            ],
+            selected: {imperial},
+            onSelectionChanged: (v) => setState(() {
+              imperial = v.first;
+              height.clear();
+              weight.clear();
+            }),
+          ),
+          getCube(3, context),
           const Text(
             "Height:",
           ),
           getCube(2, context),
           TextField(
-            keyboardType: TextInputType.number,
-
-            // textAlign: TextAlign.center,
+            key: const Key('height_field'),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             controller: height,
             decoration: InputDecoration(
-              hintText: "Height (CM)",
+              hintText: imperial ? "Height (IN)" : "Height (CM)",
               filled: true,
               prefixIcon: const Icon(Icons.height),
               border: OutlineInputBorder(
@@ -109,13 +124,13 @@ class _BMICalculatorState extends State<BMICalculator> {
           ),
           getCube(2, context),
           TextField(
-            keyboardType: TextInputType.number,
-            // textAlign: TextAlign.center,
+            key: const Key('weight_field'),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             controller: weight,
 
             decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.monitor_weight_outlined),
-                hintText: "Weight (KG)",
+                hintText: imperial ? "Weight (LB)" : "Weight (KG)",
                 filled: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -128,8 +143,8 @@ class _BMICalculatorState extends State<BMICalculator> {
           ),
           getCube(2, context),
           TextField(
+            key: const Key('age_field'),
             keyboardType: TextInputType.number,
-            // textAlign: TextAlign.center,
             controller: age,
             decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.calendar_month),
@@ -179,25 +194,39 @@ class _BMICalculatorState extends State<BMICalculator> {
       return;
     }
 
-    heightData = double.parse(height.text);
-    weightData = double.parse(weight.text);
-    ageData = double.parse(age.text);
-    // var ageData = int.parse(age.text);
-    showToast(BMI(heightData, weightData).toString(), context);
+    final h = double.tryParse(height.text.trim().replaceAll(',', '.'));
+    final w = double.tryParse(weight.text.trim().replaceAll(',', '.'));
+    final a = double.tryParse(age.text.trim());
+    if (h == null || h <= 0) {
+      showToast("Enter a valid height", context);
+      return;
+    }
+    if (w == null || w <= 0) {
+      showToast("Enter a valid weight", context);
+      return;
+    }
+    if (a == null || a <= 0) {
+      showToast("Enter a valid age", context);
+      return;
+    }
+    heightData = imperial ? h * cmPerInch : h;
+    weightData = imperial ? w * kgPerPound : w;
+    ageData = a;
+    final bmiNow = BMI(heightData, weightData);
+    showToast(bmiNow.toString(), context);
     setState(() {
-      result = BMI(heightData, weightData);
+      result = bmiNow;
       ResultIndex(result);
       isVisible = true;
     });
     LocalDataCubit.get(context)
-        .saveDataToList(AppConstants.previousBmiList, result.toString());
+        .saveDataToList(AppConstants.previousBmiList,
+            BmiEntry.encode(result, DateTime.now()));
     return;
   }
 
   double BMI(double height, double weight) {
-    double bmi = (weight / height / height) * 10000;
-    double BMIValue = double.parse(bmi.toStringAsFixed(2));
-    return BMIValue;
+    return bmiFromMetric(height, weight);
   }
 
   void MaleFemaleIndex(int index) {
