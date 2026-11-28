@@ -73,20 +73,3 @@ jobs:
           name: signed-release-aab
           path: bundle/app-release.aab
           retention-days: 7
-  handoff:
-    needs: sign
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: signed-release-aab
-          path: out
-      - name: Attach the signed bundle to a pre-release for hand-off to Play Console
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          sha256sum out/app-release.aab
-          gh release create "play-handoff-${GITHUB_RUN_NUMBER}" out/app-release.aab --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "Signed bundle for Play upload (run ${GITHUB_RUN_NUMBER})" --notes "Signed with the app upload key, contains no key material. Temporary, deleted after upload."
