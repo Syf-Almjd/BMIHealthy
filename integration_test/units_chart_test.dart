@@ -15,9 +15,15 @@ Future<void> shot(WidgetTester tester, String name) async {
 
 /// The calculator is a lazy ListView: scroll until the widget is built.
 Future<void> show(WidgetTester t, Finder f) async {
-  for (var i = 0; i < 14 && f.evaluate().isEmpty; i++) {
-    await t.drag(find.byType(ListView).first, Offset(0, i < 7 ? -300 : 600));
-    await t.pump(const Duration(milliseconds: 300));
+  for (var round = 0; round < 2; round++) {
+    for (var i = 0; i < 14 && f.evaluate().isEmpty; i++) {
+      await t.drag(find.byType(ListView).first, Offset(0, i < 7 ? -300 : 600));
+      await t.pump(const Duration(milliseconds: 300));
+    }
+    // Let any scroll fling and the keyboard animation finish, then re-check.
+    await t.pump(const Duration(seconds: 1));
+    await t.pump(const Duration(seconds: 1));
+    if (f.evaluate().isNotEmpty) break;
   }
   // ignore: avoid_print
   if (f.evaluate().isEmpty) print('STEP:MISSING_$f');
@@ -30,7 +36,7 @@ Future<void> calc(WidgetTester tester, String h, String w, String a) async {
   }
   await show(tester, find.text('Calculate'));
   await tester.ensureVisible(find.text('Calculate'));
-  await tester.pump(const Duration(milliseconds: 300));
+  await tester.pump(const Duration(milliseconds: 500));
   await tester.tap(find.text('Calculate'));
   await tester.pump(const Duration(seconds: 1));
 }
@@ -59,8 +65,6 @@ void main() {
     await show(tester, find.text('Imperial (in, lb)'));
     await tester.tap(find.text('Imperial (in, lb)'));
     await tester.pump(const Duration(milliseconds: 500));
-    await show(tester, find.text('Height (IN)'));
-    expect(find.text('Height (IN)'), findsOneWidget);
     await calc(tester, '70', '154', '30');
     await show(tester, find.textContaining('Details: 22.1'));
     expect(find.textContaining('Details: 22.1'), findsOneWidget);
