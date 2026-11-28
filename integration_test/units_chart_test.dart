@@ -115,11 +115,20 @@ void main() {
     await calc(tester, '170', '80', '30'); // 27.68
     await show(tester, find.text('Overweight'));
     expect(find.text('Overweight'), findsOneWidget);
-    await calc(tester, '170', '72', '15'); // under 18: no adult category
+    await calc(tester, '170', '72', '17'); // under 18: no adult category
     await show(tester, find.byKey(const Key('bmi_under18')));
     expect(find.byKey(const Key('bmi_under18')), findsOneWidget);
     expect(find.byKey(const Key('bmi_category')), findsNothing);
     await shot(tester, 'under18_note');
+    await calc(tester, '170', '72', '19'); // 18-19: adult category plus WHO overlap note
+    await show(tester, find.byKey(const Key('bmi_teen')));
+    expect(find.byKey(const Key('bmi_teen')), findsOneWidget);
+    expect(find.text('Normal range'), findsOneWidget);
+    await shot(tester, 'age19_note');
+    await calc(tester, '170', '72', '30');
+    await show(tester, find.byKey(const Key('bmi_limits')));
+    expect(find.byKey(const Key('bmi_teen')), findsNothing);
+    expect(find.textContaining('During pregnancy'), findsOneWidget);
     // ignore: avoid_print
     print('UNITS_CHART_OK');
   });
