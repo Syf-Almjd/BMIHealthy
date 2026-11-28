@@ -20,6 +20,11 @@ class BMICalculator extends StatefulWidget {
 class _BMICalculatorState extends State<BMICalculator> {
   int indexMaleFemale = 0;
   bool imperial = false;
+  // Canonical metric values behind the text fields, so switching units back and
+  // forth does not drift through rounding. Only used while the field text is
+  // still the one we wrote.
+  double? _canonHeightCm, _canonWeightKg;
+  String _shownHeight = '', _shownWeight = '';
   TextEditingController height = TextEditingController();
   TextEditingController weight = TextEditingController();
   TextEditingController age = TextEditingController();
@@ -94,11 +99,7 @@ class _BMICalculatorState extends State<BMICalculator> {
               ButtonSegment(value: true, label: Text('Imperial (in, lb)')),
             ],
             selected: {imperial},
-            onSelectionChanged: (v) => setState(() {
-              imperial = v.first;
-              height.clear();
-              weight.clear();
-            }),
+            onSelectionChanged: (v) => setState(() => switchUnits(v.first)),
           ),
           getCube(3, context),
           const Text(
@@ -178,6 +179,38 @@ class _BMICalculatorState extends State<BMICalculator> {
         ],
       ),
     );
+  }
+
+  String _fmt(double v) {
+    final t = v.toStringAsFixed(1);
+    return t.endsWith('.0') ? t.substring(0, t.length - 2) : t;
+  }
+
+  /// Switch units and convert what is typed instead of clearing it.
+  void switchUnits(bool toImperial) {
+    if (toImperial == imperial) return;
+    double? cm, kg;
+    if (height.text.isNotEmpty && height.text == _shownHeight) {
+      cm = _canonHeightCm;
+    } else {
+      final h = double.tryParse(height.text.trim().replaceAll(',', '.'));
+      if (h != null && h > 0) cm = imperial ? h * cmPerInch : h;
+    }
+    if (weight.text.isNotEmpty && weight.text == _shownWeight) {
+      kg = _canonWeightKg;
+    } else {
+      final w = double.tryParse(weight.text.trim().replaceAll(',', '.'));
+      if (w != null && w > 0) kg = imperial ? w * kgPerPound : w;
+    }
+    imperial = toImperial;
+    _canonHeightCm = cm;
+    _canonWeightKg = kg;
+    _shownHeight =
+        cm == null ? height.text : _fmt(imperial ? cm / cmPerInch : cm);
+    _shownWeight =
+        kg == null ? weight.text : _fmt(imperial ? kg / kgPerPound : kg);
+    height.text = _shownHeight;
+    weight.text = _shownWeight;
   }
 
   validation() {
