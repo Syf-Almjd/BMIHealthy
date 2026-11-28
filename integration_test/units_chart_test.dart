@@ -51,13 +51,27 @@ void main() {
     expect(find.textContaining('Details: 22.1'), findsOneWidget);
     await shot(tester, 'imperial_result');
 
-    // Metric: 180 cm, 81 kg -> 25.0.
+    // Toggle converts the typed values and a round trip returns the originals.
     await tester.ensureVisible(find.text('Metric (cm, kg)'));
     await tester.tap(find.text('Metric (cm, kg)'));
     await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('177.8'), findsOneWidget); // 70 in
+    expect(find.text('69.9'), findsOneWidget); // 154 lb
+    await tester.tap(find.text('Imperial (in, lb)'));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('70'), findsOneWidget);
+    expect(find.text('154'), findsOneWidget);
+    await tester.tap(find.text('Metric (cm, kg)'));
+    await tester.pump(const Duration(milliseconds: 500));
+    // Metric: 180 cm, 81 kg -> 25.0.
     await calc(tester, '180', '81', '30');
     expect(find.textContaining('Details: 25.0'), findsOneWidget);
 
+    // Relaunch: tear the app down and start it again; saved results persist.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpWidget(const MyApp());
+    await tester.pump(const Duration(seconds: 2));
     await tester.tap(find.byIcon(Icons.history_toggle_off_sharp));
     await tester.pump(const Duration(seconds: 2));
     expect(find.byKey(const Key('bmi_chart')), findsOneWidget);
