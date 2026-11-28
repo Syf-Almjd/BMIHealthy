@@ -38,8 +38,8 @@ String bmiCategoryImage(BmiCategory c) {
 }
 
 const String bmiScaleText =
-    'Adult BMI categories (WHO): below 18.5 is underweight, 18.5 to 24.9 is the '
-    'normal range, 25 to 29.9 is overweight, and 30 or above is obesity.';
+    'Adult BMI categories (WHO): below 18.5 is underweight, 18.5 to below 25 is '
+    'the normal range, 25 to below 30 is overweight, and 30 or above is obesity.';
 
 const String bmiLimitsText =
     'BMI is a general screening measure, not a diagnosis. It does not measure '
