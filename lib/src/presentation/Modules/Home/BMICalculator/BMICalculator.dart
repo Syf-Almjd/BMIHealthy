@@ -292,7 +292,16 @@ class _BMICalculatorState extends State<BMICalculator> {
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: txt),
           ),
           const SizedBox(height: 12),
-          Image.asset(bmiCategoryImage(cat), scale: 2),
+          // The artwork has a baked-in label band (older, non-WHO ranges);
+          // show only the figure. The intervals are stated in the text below.
+          ClipRect(
+            child: Align(
+              alignment: Alignment.topCenter,
+              heightFactor: 0.8,
+              child: Image.asset(bmiCategoryImage(cat),
+                  key: const Key('bmi_figure'), scale: 2),
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             bmiScaleText,
