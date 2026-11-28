@@ -215,6 +215,7 @@ class _BMICalculatorState extends State<BMICalculator> {
   }
 
   validation() {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (height.text.isEmpty) {
       showToast("Height is required*", context);
       return;
@@ -271,6 +272,8 @@ class _BMICalculatorState extends State<BMICalculator> {
 
   Widget BMIDetails(bool isVisibleBMIDetials) {
     if (!isVisibleBMIDetials) return const SizedBox.shrink();
+    final txt = Theme.of(context).textTheme.bodyMedium?.color ??
+        Theme.of(context).colorScheme.onSurface;
     final adult = showAdultCategory(ageData);
     final cat = bmiCategory(rawBmi);
     return Column(
@@ -278,7 +281,7 @@ class _BMICalculatorState extends State<BMICalculator> {
         Text(
           textAlign: TextAlign.center,
           "Details: $result BMI",
-          style: const TextStyle(fontSize: 18, color: Color(0xff3a3b3a)),
+          style: TextStyle(fontSize: 18, color: txt),
         ),
         const SizedBox(height: 16),
         if (adult) ...[
@@ -286,39 +289,39 @@ class _BMICalculatorState extends State<BMICalculator> {
             bmiCategoryLabel(cat),
             key: const Key('bmi_category'),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: txt),
           ),
           const SizedBox(height: 12),
           Image.asset(bmiCategoryImage(cat), scale: 2),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             bmiScaleText,
             key: Key('bmi_scale'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: txt),
           ),
           if (showTeenOverlapNote(ageData)) ...[
             const SizedBox(height: 12),
-            const Text(
+            Text(
               bmiTeen1819Text,
               key: Key('bmi_teen'),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+              style: TextStyle(fontSize: 14, color: txt),
             ),
           ],
         ] else
-          const Text(
+          Text(
             bmiUnder18Text,
             key: Key('bmi_under18'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 15, color: txt),
           ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           bmiLimitsText,
           key: Key('bmi_limits'),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 13, color: Colors.grey),
+          style: TextStyle(fontSize: 14, color: txt),
         ),
         const SizedBox(height: 12),
         OutlinedButton(
@@ -334,6 +337,7 @@ class _BMICalculatorState extends State<BMICalculator> {
         ),
         getCube(1, context),
         if (_bannerAd != null) adWidget(),
+        const SizedBox(height: 40),
       ],
     );
   }
