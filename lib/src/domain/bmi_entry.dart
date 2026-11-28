@@ -1,3 +1,5 @@
+import 'bmi_category.dart';
+
 /// One saved BMI result. Stored as a plain string so older saved histories keep
 /// working: legacy entries are just the number ("22.86"), new ones are
 /// "22.86|2026-11-28T14:40:00.000".
@@ -30,8 +32,6 @@ class BmiEntry {
 const double cmPerInch = 2.54;
 const double kgPerPound = 0.45359237;
 
-/// BMI from metric values, rounded to 2 decimals (same as before).
-double bmiFromMetric(double heightCm, double weightKg) {
-  final bmi = (weightKg / heightCm / heightCm) * 10000;
-  return double.parse(bmi.toStringAsFixed(2));
-}
+/// BMI from metric values as displayed (see bmiDisplay in bmi_category.dart).
+double bmiFromMetric(double heightCm, double weightKg) =>
+    bmiDisplay(bmiRaw(heightCm, weightKg));
