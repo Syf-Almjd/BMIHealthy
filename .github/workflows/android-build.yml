@@ -19,6 +19,7 @@ jobs:
           channel: stable
       - run: flutter --version
       - run: flutter pub get
+      - run: flutter test test/bmi_category_test.dart
       - run: flutter build apk --debug
       - run: flutter build appbundle --release
       - name: Show target SDK of the release bundle manifest
