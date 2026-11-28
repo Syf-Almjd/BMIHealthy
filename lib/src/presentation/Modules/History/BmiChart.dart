@@ -7,15 +7,18 @@ class BmiChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    final grey = Colors.grey;
+    final txt = Theme.of(context).textTheme.bodyMedium?.color ??
+        Theme.of(context).colorScheme.onSurface;
+    final dark = txt.computeLuminance() > 0.5;
+    final color = dark ? const Color(0xFF8AB4FF) : Theme.of(context).colorScheme.primary;
+    final grey = txt.withOpacity(0.85);
     return Container(
       key: const Key('bmi_chart'),
       height: 150,
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: grey.withOpacity(0.4)),
+        border: Border.all(color: grey.withOpacity(0.5)),
       ),
       child: CustomPaint(
         size: Size.infinite,
@@ -33,7 +36,7 @@ class _ChartPainter extends CustomPainter {
 
   void _label(Canvas c, String t, Offset o) {
     final tp = TextPainter(
-      text: TextSpan(text: t, style: TextStyle(color: grey, fontSize: 10)),
+      text: TextSpan(text: t, style: TextStyle(color: grey, fontSize: 12)),
       textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(c, o);
@@ -55,7 +58,7 @@ class _ChartPainter extends CustomPainter {
     double y(double v) => 3 + h - h * (v - lo) / (hi - lo);
 
     final axis = Paint()
-      ..color = grey.withOpacity(0.3)
+      ..color = grey.withOpacity(0.6)
       ..strokeWidth = 1;
     canvas.drawLine(Offset(left, 3), Offset(left, 3 + h), axis);
     canvas.drawLine(Offset(left, 3 + h), Offset(left + w, 3 + h), axis);
